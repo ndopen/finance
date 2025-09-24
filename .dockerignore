@@ -1,0 +1,361 @@
+# =============================================================================
+# Docker Ignore File for FastAPI + React Finance Application
+# =============================================================================
+# This file specifies which files and directories should be excluded when
+# building Docker images to reduce build context size and improve performance.
+
+# =============================================================================
+# Version Control & Git
+# =============================================================================
+.git
+.gitignore
+.gitattributes
+.gitmodules
+.github/
+*.git*
+
+# =============================================================================
+# Documentation & README Files
+# =============================================================================
+README.md
+readme.md
+README.rst
+readme.rst
+CHANGELOG.md
+CHANGELOG.rst
+CHANGELOG.txt
+LICENSE
+LICENSE.txt
+LICENSE.md
+CONTRIBUTING.md
+CONTRIBUTORS.md
+SECURITY.md
+docs/
+*.md
+*.rst
+*.txt
+
+# =============================================================================
+# Development & IDE Files
+# =============================================================================
+.vscode/
+.idea/
+.vs/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+.editorconfig
+
+# Vim
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# =============================================================================
+# Python Development
+# =============================================================================
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env/
+.python-version
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Python build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+
+# Testing
+test-results/
+.hypothesis/
+coverage.xml
+*.cover
+
+# =============================================================================
+# Node.js & Frontend Development
+# =============================================================================
+
+# Dependencies (will be installed in container)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs (will be built in container)
+dist/
+build/
+out/
+
+# Frontend cache and temp files
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+.vite/
+*.tsbuildinfo
+.eslintcache
+
+# Package manager files that shouldn't be copied
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.npmrc
+.yarnrc*
+
+# =============================================================================
+# Database Files
+# =============================================================================
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# PostgreSQL data directories
+pgdata/
+postgres-data/
+postgresql-data/
+
+# Database dumps and backups
+*.sql
+*.psql
+*.backup
+*.dump
+
+# Financial data files
+*.csv
+*.xlsx
+*.xls
+*.ofx
+*.qfx
+*.qif
+
+# =============================================================================
+# Docker & Container Files
+# =============================================================================
+
+# Docker files (except the ones needed for build)
+Dockerfile*
+docker-compose*.yml
+docker-compose*.yaml
+.dockerignore
+
+# Docker volumes and runtime data
+.docker/
+dockerdata/
+
+# =============================================================================
+# Environment & Configuration
+# =============================================================================
+
+# Environment files with secrets
+.env
+.env.*
+!.env.example
+.envrc
+
+# Configuration files that contain secrets
+config/local.*
+config/development.*
+config/production.*
+secrets/
+.secrets/
+
+# SSL certificates and keys
+*.key
+*.pem
+*.crt
+*.cert
+*.p12
+*.pfx
+
+# =============================================================================
+# Logs & Runtime Files
+# =============================================================================
+
+# Application logs
+*.log
+*.log.*
+logs/
+log/
+
+# Runtime files
+*.pid
+*.sock
+*.tmp
+tmp/
+temp/
+
+# =============================================================================
+# OS Generated Files
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# =============================================================================
+# Testing & Quality Assurance
+# =============================================================================
+
+# Test outputs
+test-results/
+playwright-report/
+/playwright/.cache/
+cypress/videos/
+cypress/screenshots/
+
+# Code quality tools
+.sonarqube/
+.scannerwork/
+
+# =============================================================================
+# CI/CD & Deployment
+# =============================================================================
+
+# CI/CD configuration files
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+Jenkinsfile
+azure-pipelines.yml
+
+# Deployment scripts and configs
+deploy/
+deployment/
+k8s/
+kubernetes/
+helm/
+terraform/
+.terraform/
+
+# =============================================================================
+# Monitoring & Analytics
+# =============================================================================
+
+# Sentry
+.sentryclirc
+
+# Performance monitoring
+.artillery/
+.loadtest/
+
+# =============================================================================
+# Backup & Archive Files
+# =============================================================================
+
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
+backup/
+backups/
+
+# Archive files
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# =============================================================================
+# Application Uploads & Media
+# =============================================================================
+
+# User uploaded files (should be handled via volumes)
+uploads/
+media/
+static/files/
+public/uploads/
+
+# Generated files that should be built in container
+openapi.json
+static/generated/
+
+# =============================================================================
+# Performance & Optimization
+# =============================================================================
+
+# Bundle analysis
+bundle-analyzer-report.html
+webpack-bundle-analyzer/
+
+# Source maps (for production builds)
+*.map
+
+# =============================================================================
+# Miscellaneous
+# =============================================================================
+
+# Editor temporary files
+*.swp
+*.swo
+*~
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Dependency directories that might be in subdirectories
+**/node_modules/
+**/__pycache__/
+**/.venv/
+
+# Local development overrides
+docker-compose.override.yml
+local.yml
+
+# Scripts that are for local development only
+scripts/local/
+scripts/dev/
