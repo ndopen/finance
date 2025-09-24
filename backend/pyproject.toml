@@ -1,7 +1,7 @@
 [project]
 name = "finance-fastapi"
 version = "0.1.0"
-descrip ion = "A FastAPI backend for a finance application"
+description = "A FastAPI backend for a finance application"
 requires-python = ">=3.10,<4.0"
 dependencies = [
     "fastapi[standard]<1.0.0,>=0.114.2",
@@ -36,6 +36,9 @@ dev-dependencies = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
 
 [tool.mypy]
 strict = true
