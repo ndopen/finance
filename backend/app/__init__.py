@@ -1,0 +1,1 @@
+"""Finance FastAPI Application."""
