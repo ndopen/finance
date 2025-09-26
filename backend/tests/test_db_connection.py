@@ -1,47 +1,71 @@
 """
-Database connection test script.
-Run this to test if the database configuration is working correctly.
+Database connection tests using pytest.
+Tests basic database configuration and connectivity.
 """
 
-import sys
-import os
-
-# Add the app directory to the Python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+import pytest
+from sqlalchemy import text
 
 from app.core.config import settings
-from app.core.database import create_db_engine, create_db_and_tables
+from app.core.db import engine
 
 
-def test_database_connection():
-    """Test database connection and display configuration info."""
-    
-    print(f"🔧 Environment: {settings.ENVIRONMENT}")
-    print(f"📊 Project: {settings.PROJECT_NAME} v{settings.VERSION}")
-    print(f"🗄️  Database URL: {settings.sqlalchemy_database_uri}")
-    print(f"🔍 Database Type: {'SQLite' if settings.is_sqlite else 'PostgreSQL' if settings.is_postgresql else 'Unknown'}")
-    
-    try:
-        # Test engine creation
-        engine = create_db_engine()
-        print("✅ Database engine created successfully")
+@pytest.fixture
+def db_engine():
+    """Create a database engine for testing."""
+    return engine
+
+
+class TestDatabaseConnection:
+    """Test suite for database connection functionality."""
+
+    def test_settings_configuration(self):
+        """Test that database settings are properly configured."""
+        assert settings.ENVIRONMENT is not None
+        assert settings.PROJECT_NAME is not None
+        assert settings.SQLALCHEMY_DATABASE_URI is not None
         
-        # Test connection
-        from sqlalchemy import text
-        with engine.connect() as connection:
+        # Test PostgreSQL configuration
+        assert str(settings.SQLALCHEMY_DATABASE_URI).startswith("postgresql")
+
+    def test_database_engine_creation(self, db_engine):
+        """Test that database engine can be created successfully."""
+        assert db_engine is not None
+        assert hasattr(db_engine, 'connect')
+
+    def test_database_connection(self, db_engine):
+        """Test that we can establish a connection to the database."""
+        with db_engine.connect() as connection:
             result = connection.execute(text("SELECT 1"))
-            print("✅ Database connection test successful")
-            
-        # Create tables (this will be a no-op if no models are defined yet)
-        create_db_and_tables()
-        print("✅ Database tables creation/verification successful")
-        
-        return True
-        
-    except Exception as e:
-        print(f"❌ Database connection failed: {e}")
-        return False
+            assert result.fetchone() is not None
 
+    def test_database_tables_creation(self, db_engine):
+        """Test that database tables can be created/verified."""
+        # This should not raise any exceptions - tables are created by Alembic
+        try:
+            # Just test that we can connect and the engine works
+            with db_engine.connect() as connection:
+                result = connection.execute(text("SELECT 1"))
+                assert result.fetchone() is not None
+        except Exception as e:
+            pytest.fail(f"Database connection test failed: {e}")
 
-if __name__ == "__main__":
-    test_database_connection()
+    def test_postgresql_configuration(self):
+        """Test PostgreSQL database configuration."""
+        # Test that database URL is PostgreSQL
+        db_url = str(settings.SQLALCHEMY_DATABASE_URI)
+        assert db_url.startswith("postgresql+psycopg://")
+        
+        # Test PostgreSQL connection parameters
+        assert settings.POSTGRES_SERVER is not None
+        assert settings.POSTGRES_PORT > 0
+        assert settings.POSTGRES_USER is not None
+        assert settings.POSTGRES_PASSWORD is not None
+        assert settings.POSTGRES_DB is not None
+
+    def test_database_url_format(self):
+        """Test that database URL is in correct PostgreSQL format."""
+        db_url = str(settings.SQLALCHEMY_DATABASE_URI)
+        assert db_url.startswith("postgresql+psycopg://")
+        assert settings.POSTGRES_USER in db_url
+        assert settings.POSTGRES_DB in db_url

@@ -1,27 +1,29 @@
 """
 Application settings and configuration.
-Handles environment-specific settings including database configuration.
+Based on FastAPI full-stack template with PostgreSQL-only configuration.
 """
 
 import secrets
+import warnings
 from typing import Annotated, Any, Literal
 
 from pydantic import (
     AnyUrl,
     BeforeValidator,
+    EmailStr,
     HttpUrl,
     PostgresDsn,
     computed_field,
     model_validator,
 )
-from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing_extensions import Self
 
 
 def parse_cors(v: Any) -> list[str] | str:
     """Parse CORS origins from string or list."""
     if isinstance(v, str) and not v.startswith("["):
-        return [i.strip() for i in v.split(",")]
+        return [i.strip() for i in v.split(",") if i.strip()]
     elif isinstance(v, list | str):
         return v
     raise ValueError(v)
@@ -31,95 +33,86 @@ class Settings(BaseSettings):
     """Application settings."""
     
     model_config = SettingsConfigDict(
-        env_file=".env", 
+        # Use top level .env file (one level above ./backend/)
+        env_file="../.env", 
         env_ignore_empty=True, 
         extra="ignore"
     )
     
-    # Environment
-    ENVIRONMENT: Literal["development", "production"] = "development"
-    
     # API Configuration
     API_V1_STR: str = "/api/v1"
-    PROJECT_NAME: str = "Finance FastAPI"
-    VERSION: str = "0.1.0"
-    DESCRIPTION: str = "A FastAPI backend for a finance application"
-    
-    # Security
     SECRET_KEY: str = secrets.token_urlsafe(32)
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    # 60 minutes * 24 hours * 8 days = 8 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
+    
+    # Frontend configuration
+    FRONTEND_HOST: str = "http://localhost:5173"
+    ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     
     # CORS
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)
     ] = []
     
-    @computed_field  # type: ignore[misc]
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def all_cors_origins(self) -> list[str]:
-        return [str(origin).removesuffix("/") for origin in self.BACKEND_CORS_ORIGINS]
+        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [
+            self.FRONTEND_HOST
+        ]
     
-    # Database Configuration
-    DATABASE_URL: str = "sqlite:///./app.db"
+    # Project Information
+    PROJECT_NAME: str
     
-    # PostgreSQL Configuration (used when DATABASE_URL is PostgreSQL)
-    POSTGRES_HOST: str = "localhost"
+    # Database Configuration - PostgreSQL only
+    POSTGRES_SERVER: str
     POSTGRES_PORT: int = 5432
-    POSTGRES_USER: str = "username"
-    POSTGRES_PASSWORD: str = "password"
-    POSTGRES_DB: str = "finance_db"
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str = ""
+    POSTGRES_DB: str = ""
     
-    @computed_field  # type: ignore[misc]
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def postgres_url(self) -> PostgresDsn:
+    def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
         """Build PostgreSQL URL from individual components."""
-        return MultiHostUrl.build(
+        return PostgresDsn.build(
             scheme="postgresql+psycopg",
             username=self.POSTGRES_USER,
             password=self.POSTGRES_PASSWORD,
-            host=self.POSTGRES_HOST,
+            host=self.POSTGRES_SERVER,
             port=self.POSTGRES_PORT,
             path=self.POSTGRES_DB,
         )
     
-    @computed_field  # type: ignore[misc]
-    @property
-    def sqlalchemy_database_uri(self) -> str:
-        """Get the appropriate database URI based on environment."""
-        if self.DATABASE_URL.startswith("postgresql"):
-            return str(self.DATABASE_URL)
-        elif self.DATABASE_URL.startswith("sqlite"):
-            return self.DATABASE_URL
-        else:
-            # Default to SQLite for development
-            return "sqlite:///./app.db"
-    
-    @computed_field  # type: ignore[misc]
-    @property
-    def is_sqlite(self) -> bool:
-        """Check if using SQLite database."""
-        return self.sqlalchemy_database_uri.startswith("sqlite")
-    
-    @computed_field  # type: ignore[misc]
-    @property
-    def is_postgresql(self) -> bool:
-        """Check if using PostgreSQL database."""
-        return self.sqlalchemy_database_uri.startswith("postgresql")
+    # Email Configuration (optional for finance app)
+    EMAIL_TEST_USER: EmailStr = "test@example.com"
     
     # Admin User
-    FIRST_SUPERUSER: str = "admin@example.com"
-    FIRST_SUPERUSER_PASSWORD: str = "changethis"
+    FIRST_SUPERUSER: EmailStr
+    FIRST_SUPERUSER_PASSWORD: str
+    
+    def _check_default_secret(self, var_name: str, value: str | None) -> None:
+        """Check if secret values are using default unsafe values."""
+        if value == "changethis":
+            message = (
+                f'The value of {var_name} is "changethis", '
+                "for security, please change it, at least for deployments."
+            )
+            if self.ENVIRONMENT == "local":
+                warnings.warn(message, stacklevel=1)
+            else:
+                raise ValueError(message)
     
     @model_validator(mode="after")
-    def validate_cors_origins(self) -> "Settings":
-        """Validate CORS origins configuration."""
-        if isinstance(self.BACKEND_CORS_ORIGINS, str):
-            self.BACKEND_CORS_ORIGINS = [
-                origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",")
-            ]
+    def _enforce_non_default_secrets(self) -> Self:
+        """Enforce that default secrets are changed in non-local environments."""
+        self._check_default_secret("SECRET_KEY", self.SECRET_KEY)
+        self._check_default_secret("POSTGRES_PASSWORD", self.POSTGRES_PASSWORD)
+        self._check_default_secret(
+            "FIRST_SUPERUSER_PASSWORD", self.FIRST_SUPERUSER_PASSWORD
+        )
         return self
 
 
 # Global settings instance
-settings = Settings()
+settings = Settings()  # type: ignore

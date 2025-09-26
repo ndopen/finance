@@ -49,7 +49,7 @@ This is a **complete migration** of the popular [ezBookkeeping](https://github.c
 #### Backend (FastAPI)
 - **Framework**: FastAPI 0.114+ with async/await support
 - **ORM**: SQLModel (combines Pydantic + SQLAlchemy)
-- **Database**: PostgreSQL (primary), SQLite (development)
+- **Database**: PostgreSQL
 - **Authentication**: JWT with PassLib and bcrypt
 - **Validation**: Pydantic v2 with automatic OpenAPI generation
 - **Migration**: Alembic for database schema management

@@ -128,7 +128,7 @@ backend/
 ### Prerequisites
 
 - Python 3.10 or higher
-- PostgreSQL 13+ (or SQLite for development)
+- PostgreSQL 13+
 - uv package manager (recommended) or pip
 
 ### 1. Environment Setup

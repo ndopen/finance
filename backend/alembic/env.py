@@ -19,7 +19,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Set the SQLAlchemy URL from our settings
-config.set_main_option("sqlalchemy.url", settings.sqlalchemy_database_uri)
+config.set_main_option("sqlalchemy.url", str(settings.SQLALCHEMY_DATABASE_URI))
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -46,7 +46,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = settings.sqlalchemy_database_uri
+    url = str(settings.SQLALCHEMY_DATABASE_URI)
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -68,7 +68,7 @@ def run_migrations_online() -> None:
 
     """
     # Use our database engine from settings instead of config-based engine
-    from app.core.database import engine
+    from app.core.db import engine
     
     with engine.connect() as connection:
         context.configure(
